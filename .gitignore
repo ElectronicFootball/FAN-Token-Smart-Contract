@@ -1,0 +1,7 @@
+.idea
+build
+installed_contracts
+node_modules
+npm-debug.log
+.DS_Store
+build
