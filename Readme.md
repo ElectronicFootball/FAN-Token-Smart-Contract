@@ -1,6 +1,6 @@
-## Fancoin smart contract
+## Fan Token smart contract
 
-eFL Fancoin smart contract source code.
+eFL Fan Token smart contract source code.
 
 ## Installation
 
