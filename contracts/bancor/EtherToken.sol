@@ -1,5 +1,5 @@
 pragma solidity ^0.4.11;
-import '../fan_token/ERC20Token.sol';
+import '../ERC20Token.sol';
 import '../TokenHolder.sol';
 import '../Owned.sol';
 import '../interfaces/IEtherToken.sol';

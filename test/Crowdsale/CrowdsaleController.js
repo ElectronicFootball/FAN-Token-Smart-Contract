@@ -1,9 +1,10 @@
+const web3 = require("web3");
 const FanToken = artifacts.require("./FanToken.sol");
 const CrowdsaleController = artifacts.require("./CrowdsaleController.sol");
 const assertJump = require("zeppelin-solidity/test/helpers/assertJump.js");
 
 contract('CrowdsaleController', (accounts) => {
-  it("fallback must validate state and min investment", async () => {
+  it("fallback must validate state, investment amount and data", async () => {
     const USD_RATE = '300.00';
     const value = 4000000000000000;
 
@@ -16,15 +17,32 @@ contract('CrowdsaleController', (accounts) => {
       assertJump(error);
     }
 
-    await controller.setActiveState({from: accounts[0]});
-    await controller.setUsdRate(USD_RATE, {from: accounts[0]});
+    // Set active state
+    await controller.setActiveState({ from: accounts[0] });
+    try {
+      await controller.send(1, { from: accounts[1] });
+    } catch (error) {
+      assertJump(error);
+    }
 
-    const data = await controller.sendTransaction({ value: value, from: accounts[1] });
+    // Set USD Rate
+    await controller.setUsdRate(USD_RATE, { from: accounts[0] });
+    try {
+      await controller.send(1, { from: accounts[1] });
+    } catch (error) {
+      assertJump(error);
+    }
+
+    // Set DATA
+    const txData = web3.utils.stringToHex('test-string');
+
+    const data = await controller.sendTransaction({ value: value, from: accounts[1], data: txData });
     const purchaseEvent = data.logs[0];
     assert.equal(purchaseEvent.event, 'TokenPurchased');
     assert.equal(purchaseEvent.args.from, accounts[1]);
     assert.equal(purchaseEvent.args.value, value);
     assert.equal(purchaseEvent.args.currentUsdRate, 30000);
+    assert.equal(purchaseEvent.args.txData, txData);
   });
 
   it("should not allow to call issueTokens if controller is inactive", async () => {

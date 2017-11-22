@@ -15,7 +15,7 @@ contract CrowdsaleController is SmartTokenController, UsdUpdatable, StateChangab
     uint numPurchases;
     address public beneficiary;
 
-    event TokenPurchased(uint256 id, uint256 value, address from, uint createdAt, uint currentUsdRate);
+    event TokenPurchased(uint256 id, uint256 value, address from, uint createdAt, uint currentUsdRate, bytes txData);
 
     /*
        Contribution amount validator
@@ -23,6 +23,11 @@ contract CrowdsaleController is SmartTokenController, UsdUpdatable, StateChangab
    */
     modifier validateAmount {
         require(msg.value >= (1 ether / (USD_RATE / 100)));
+        _;
+    }
+
+    modifier validateData {
+        require(msg.data.length != 0);
         _;
     }
 
@@ -51,10 +56,10 @@ contract CrowdsaleController is SmartTokenController, UsdUpdatable, StateChangab
         Gives number to contribution and emits event.
         Sends contribution amount to beneficiary account.
     */
-    function processPurchase(uint256 _value, address _from) private {
+    function processPurchase(uint256 _value, address _from, bytes _data) private {
         require(beneficiary.send(msg.value));
         uint purchaseID = numPurchases++;
-        TokenPurchased(purchaseID, _value, _from, now, USD_RATE);
+        TokenPurchased(purchaseID, _value, _from, now, USD_RATE, _data);
     }
 
     /*
@@ -65,7 +70,8 @@ contract CrowdsaleController is SmartTokenController, UsdUpdatable, StateChangab
         payable
         activeStateOnly
         validateAmount
+        validateData
     {
-        processPurchase(msg.value, msg.sender);
+        processPurchase(msg.value, msg.sender, msg.data);
     }
 }
