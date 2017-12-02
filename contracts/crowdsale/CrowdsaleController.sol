@@ -15,6 +15,10 @@ contract CrowdsaleController is SmartTokenController, UsdUpdatable, StateChangab
     uint numPurchases;
     address public beneficiary;
 
+    uint public totalCollected;
+    uint public etherRaised;
+    uint public prebuyPortionTotal;
+
     event TokenPurchased(uint256 id, uint256 value, address from, uint createdAt, uint currentUsdRate, bytes txData);
 
     /*
@@ -40,9 +44,30 @@ contract CrowdsaleController is SmartTokenController, UsdUpdatable, StateChangab
     /*
       Sets beneficiary address
     */
-
     function setBeneficiary(address _beneficiary) public ownerOnly validAddress(_beneficiary) {
         beneficiary = _beneficiary;
+    }
+
+    /*
+      Adds amount to totalCollected. Needed to update amounts after fiat purchases.
+    */
+    function addAmountToTotalCollected(uint _amount) public ownerOnly {
+        totalCollected = safeAdd(totalCollected, _amount);
+    }
+
+    function allocateWings(address _wingsAddress, uint _amount)
+        public
+        payable
+        active
+        preSaleStateOnly
+        ownerOnly
+        validAddress(_wingsAddress)
+        greaterThanZero(_amount)
+    {
+        issueTokens(_wingsAddress, _amount);
+        prebuyPortionTotal = safeAdd(prebuyPortionTotal, msg.value);
+        totalCollected = safeAdd(totalCollected, msg.value);
+        etherRaised = safeAdd(totalCollected, msg.value);
     }
 
     /*
@@ -59,6 +84,8 @@ contract CrowdsaleController is SmartTokenController, UsdUpdatable, StateChangab
     function processPurchase(uint256 _value, address _from, bytes _data) private {
         require(beneficiary.send(msg.value));
         uint purchaseID = numPurchases++;
+        totalCollected = safeAdd(totalCollected, _value);
+        etherRaised = safeAdd(totalCollected, _value);
         TokenPurchased(purchaseID, _value, _from, now, USD_RATE, _data);
     }
 
