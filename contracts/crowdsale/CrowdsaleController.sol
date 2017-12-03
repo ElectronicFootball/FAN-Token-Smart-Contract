@@ -16,6 +16,7 @@ contract CrowdsaleController is SmartTokenController, UsdUpdatable, StateChangab
     address public beneficiary;
 
     uint public totalCollected;
+    uint public fiatRaised;
     uint public etherRaised;
     uint public prebuyPortionTotal;
 
@@ -49,25 +50,14 @@ contract CrowdsaleController is SmartTokenController, UsdUpdatable, StateChangab
     }
 
     /*
-      Adds amount to totalCollected. Needed to update amounts after fiat purchases.
+      Receives value in wei and adds to totalCollected and etherRaised.
+      Converts to usd and adds value to fiatRaised raised counter.
+      Needed to update amounts after fiat purchases.
     */
     function addAmountToTotalCollected(uint _amount) public ownerOnly {
         totalCollected = safeAdd(totalCollected, _amount);
-    }
-
-    function allocateWings(address _wingsAddress, uint _amount)
-        public
-        payable
-        active
-        preSaleStateOnly
-        ownerOnly
-        validAddress(_wingsAddress)
-        greaterThanZero(_amount)
-    {
-        issueTokens(_wingsAddress, _amount);
-        prebuyPortionTotal = safeAdd(prebuyPortionTotal, msg.value);
-        totalCollected = safeAdd(totalCollected, msg.value);
-        etherRaised = safeAdd(totalCollected, msg.value);
+        etherRaised = safeAdd(etherRaised, _amount);
+        fiatRaised = safeAdd(fiatRaised, _amount * USD_RATE / 100);
     }
 
     /*
@@ -86,6 +76,7 @@ contract CrowdsaleController is SmartTokenController, UsdUpdatable, StateChangab
         uint purchaseID = numPurchases++;
         totalCollected = safeAdd(totalCollected, _value);
         etherRaised = safeAdd(totalCollected, _value);
+        fiatRaised = safeAdd(fiatRaised, _value * USD_RATE / 100);
         TokenPurchased(purchaseID, _value, _from, now, USD_RATE, _data);
     }
 
