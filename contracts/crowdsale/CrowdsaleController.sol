@@ -15,10 +15,11 @@ contract CrowdsaleController is SmartTokenController, UsdUpdatable, StateChangab
     uint numPurchases;
     address public beneficiary;
 
-    uint public totalCollected;
-    uint public fiatRaised;
+    // Returns total raised amount during all crowdsale rounds in ETH.
     uint public etherRaised;
-    uint public prebuyPortionTotal;
+
+    // Returns total raised amount during all crowdsale rounds in USD.
+    uint public fiatRaised;
 
     event TokenPurchased(uint256 id, uint256 value, address from, uint createdAt, uint currentUsdRate, bytes txData);
 
@@ -50,14 +51,17 @@ contract CrowdsaleController is SmartTokenController, UsdUpdatable, StateChangab
     }
 
     /*
-      Receives value in wei and adds to totalCollected and etherRaised.
-      Converts to usd and adds value to fiatRaised raised counter.
-      Needed to update amounts after fiat purchases.
+      Updates value of fiatRaised counter.
     */
-    function addAmountToTotalCollected(uint _amount) public ownerOnly {
-        totalCollected = safeAdd(totalCollected, _amount);
-        etherRaised = safeAdd(etherRaised, _amount);
-        fiatRaised = safeAdd(fiatRaised, _amount * USD_RATE / 100);
+    function updateFiatRaisedCounter(uint _amount) public ownerOnly {
+        fiatRaised = _amount;
+    }
+
+    /*
+      Updates value of etherRaised counter.
+    */
+    function updateEtherRaisedCounter(uint _amount) public ownerOnly {
+        etherRaised = _amount;
     }
 
     /*
@@ -74,9 +78,6 @@ contract CrowdsaleController is SmartTokenController, UsdUpdatable, StateChangab
     function processPurchase(uint256 _value, address _from, bytes _data) private {
         require(beneficiary.send(msg.value));
         uint purchaseID = numPurchases++;
-        totalCollected = safeAdd(totalCollected, _value);
-        etherRaised = safeAdd(totalCollected, _value);
-        fiatRaised = safeAdd(fiatRaised, _value * USD_RATE / 100);
         TokenPurchased(purchaseID, _value, _from, now, USD_RATE, _data);
     }
 
