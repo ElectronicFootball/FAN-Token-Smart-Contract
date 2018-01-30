@@ -1,26 +1,6 @@
-## Fan Token smart contract
-
-eFL Fan Token smart contract source code.
-
-## Installation
-
-Please install development dependencies by:
-
-```bash
-$ npm install
-$ truffle install oraclize
-```
-
-## Run tests
-
-Firstly start testrpc by executing:
-
-```bash
-$ npm run rpc
-```
-
-After run tests:
-
-```bash
-$ npm run test
-```
+## Contributors
+<ul>
+  <li><a href="https://github.com/bogdan-sviripa">Bogdan Sviripa</a></li>
+  <li><a href="https://github.com/urazovm">Marat Urazov</a></li>
+  <li><a href="https://github.com/joncalmus">Jonathan Calmus</a></li>
+</ul>
